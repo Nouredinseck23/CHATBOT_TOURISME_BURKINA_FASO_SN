@@ -43,13 +43,13 @@ Pour l'interaction utilisateur, nous avons mis en place :
 
 Ce projet est construit entièrement avec des outils 100 % Open Source :
 
-| Composant             | Technologie                         | Rôle Principal                                               | Lien                             |
-| :---                  | :---                 _ | :---                           .                        | :---                             |
-| **Langage Principal** | `Python >= 3.10`                    | Développement du projet.                                   | N/A                              |
-| **Recherche Vectorielle** | `FAISS` (Facebook AI Similarity Search) | Indexation et recherche rapide des embeddings.               | [🔗 GitHub](https://github.com/facebookresearch/faiss) |
-| **Génération d'Embeddings** | `SentenceTransformers`              | Modèle `multi-qa-mpnet-base-dot-v1` pour les représentations vectorielles. | [🔗 Site Web](https://www.sbert.net/) |
-| **Modèle de Génération** | `Microsoft PHI-3 Mini`              | LLM léger pour la création de réponses.                     | [🔗 Hugging Face](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) |
-| **Interface Utilisateur** | `Gradio`                          | Création d'une démo web interactive.               _ | [🔗 Site Web](https://www.gradio.app/) |
+| Composant                 | Technologie                         | Rôle Principal                                                                 | Lien                                                                                      |
+| ------------------------- | ----------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| **Langage Principal**     | `Python >= 3.10`                    | Développement du projet.                                                       | N/A                                                                                       |
+| **Recherche Vectorielle** | `FAISS` (Facebook AI Similarity Search) | Indexation et recherche rapide des embeddings.                                 | [🔗 GitHub](https://github.com/facebookresearch/faiss)                                     |
+| **Génération d'Embeddings** | `SentenceTransformers`              | Modèle `multi-qa-mpnet-base-dot-v1` pour les représentations vectorielles. | [🔗 Site Web](https://www.sbert.net/)                                                       |
+| **Modèle de Génération**  | `Microsoft PHI-3 Mini`              | LLM léger pour la création de réponses.                                        | [🔗 Hugging Face](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) |
+| **Interface Utilisateur** | `Gradio`                            | Création d'une démo web interactive.                                           | [🔗 Site Web](https://www.gradio.app/)                                                      |
 
 ## 4. Instructions d'Installation et de Démarrage
 
