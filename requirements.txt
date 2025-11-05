@@ -1,0 +1,26 @@
+# === Core Python ===
+numpy
+pandas
+tqdm
+
+# === NLP / Embeddings ===
+sentence-transformers   # Pour les embeddings (ex: multi-qa-mpnet-base-dot-v1)
+transformers             # Pour le modèle génératif (Phi-3-mini)
+torch                    # Backend pour les modèles HF
+
+# === Vector Store / Similarity Search ===
+faiss-cpu               # Recherche vectorielle rapide
+chromadb                # Gestion du stockage des embeddings et documents
+
+# === Frontend (Interface) ===
+gradio                  # Interface web utilisateur du chatbot
+
+# === Evaluation / Metrics ===
+scikit-learn            # Calcul précision / métriques
+nltk                    # Nettoyage texte / tokenisation
+
+# === Data Processing / Scraping ===
+beautifulsoup4          # Parsing HTML
+requests                # Téléchargement des pages web
+lxml                    # Parser XML/HTML rapide
+

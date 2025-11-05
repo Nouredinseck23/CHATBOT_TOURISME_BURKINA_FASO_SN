@@ -1,0 +1,275 @@
+import requests
+from bs4 import BeautifulSoup
+import time
+import random
+import json
+import csv
+import re
+import os
+import urllib.robotparser
+import warnings
+from bs4 import XMLParsedAsHTMLWarning
+
+# Ignorer l'avertissement XMLParsedAsHTMLWarning
+warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
+
+# -------------------------------
+# Dossier et fichiers de sortie
+# -------------------------------
+OUTPUT_FOLDER = os.path.dirname(os.path.abspath(__file__))
+JSON_FILE = os.path.join(OUTPUT_FOLDER, "corpus_tourisme.json")
+CSV_FILE = os.path.join(OUTPUT_FOLDER, "corpus_tourisme.csv")
+
+if not os.path.exists(OUTPUT_FOLDER):
+    os.makedirs(OUTPUT_FOLDER)
+
+# -------------------------------
+# URLs à scraper (sans doublons)
+# -------------------------------
+urls = list(set([
+   # ONTB sites touristiques
+    "https://www.ontb.bf/visites/sites-touristiques/sculpture-sur-granit-de-laongo",
+    "https://www.ontb.bf/visites/sites-touristiques/ruine-de-lorepeni",
+    "https://www.ontb.bf/visites/sites-touristiques/les-cascades-de-karfiguela-banfora",
+    "https://www.ontb.bf/visites/sites-touristiques/les-domes-de-fabedougou",
+    "https://www.ontb.bf/visites/sites-touristiques/habitats-kassena-de-tiebele",
+    "https://www.ontb.bf/visites/sites-touristiques/danse-warba",
+    "https://www.ontb.bf/visites/sites-touristiques/chasseurs-et-danseurs-dozos",
+    "https://www.ontb.bf/visites/sites-touristiques/danse-gourounsi",
+    "https://www.ontb.bf/visites/sites-touristiques/mausolee-tiefo-amoro",
+    "https://www.ontb.bf/visites/sites-touristiques/princesse-guimbi-ouattara",
+    "https://www.ontb.bf/visites/sites-touristiques/mosquee-de-barani",
+    "https://www.ontb.bf/visites/sites-touristiques/mosquees-de-bani",
+    "https://www.ontb.bf/visites/sites-touristiques/mare-aux-crocodiles-sacres-de-bazoule",
+    "https://www.ontb.bf/visites/sites-touristiques/palais-royal-de-kokologo",
+    "https://www.ontb.bf/visites/sites-touristiques/masques-de-gossina",
+    "https://www.ontb.bf/visites/sites-touristiques/village-artisanal-du-siao",
+    "https://www.ontb.bf/visites/sites-touristiques/habitats-peulh",
+    "https://www.ontb.bf/visites/sites-touristiques/mares-aux-crocodiles-sacres-de-sabou",
+    "https://www.ontb.bf/visites/sites-touristiques/habitat-lobi",
+    "https://www.ontb.bf/visites/sites-touristiques/pics-de-sindou",
+    "https://www.ontb.bf/visites/sites-touristiques/cavernes-de-douna",
+    "https://www.ontb.bf/visites/sites-touristiques/village-de-gani",
+    "https://www.ontb.bf/visites/sites-touristiques/poterie",
+    "https://www.ontb.bf/visites/sites-touristiques/tiwega",
+
+    # ONTB parcs
+    "https://www.ontb.bf/visites/parcs/bangre-weogo",
+    "https://www.ontb.bf/visites/parcs/parc-animalier-de-ziniare",
+    "https://www.ontb.bf/visites/parcs/parc-national-de-deux-bales",
+    "https://www.ontb.bf/visites/parcs/parc-national-darly",
+    "https://www.ontb.bf/visites/parcs/foret-classee-de-kou",
+    "https://www.ontb.bf/visites/parcs/foret-comoe-leraba",
+    "https://www.ontb.bf/visites/parcs/jardin-botanique-bantia",
+    "https://www.ontb.bf/visites/parcs/jardin-des-arts-et-cultures",
+    "https://www.ontb.bf/visites/parcs/ferme-de-wedbila",
+    "https://www.ontb.bf/visites/parcs/ranch-de-nazinga",
+
+    # ONTB musées
+    "https://www.ontb.bf/visites/musees/musee-national",
+    "https://www.ontb.bf/visites/musees/musee-sogossira-sanou",
+    "https://www.ontb.bf/visites/musees/musee-de-civilisations-des-peuples-lobi",
+    "https://www.ontb.bf/visites/musees/musee-des-fourneaux-africains-de-kaya",
+    "https://www.ontb.bf/visites/musees/musee-des-masques-de-kouka",
+    "https://www.ontb.bf/visites/musees/musee-de-oursi-hu-beero",
+    "https://www.ontb.bf/visites/musees/musee-de-warba",
+    "https://www.ontb.bf/visites/musees/centre-senoufo",
+    "https://www.ontb.bf/visites/musees/musee-de-leau",
+    "https://www.ontb.bf/visites/musees/musee-de-musique",
+    "https://www.ontb.bf/visites/musees/musee-de-la-musique-dhier-et-daujourdhui",
+
+    # ONTB événements
+    "https://www.ontb.bf/evenements/fespaco",
+    "https://www.ontb.bf/evenements/siao",
+    "https://www.ontb.bf/evenements/kunde",
+    "https://www.ontb.bf/evenements/jazz-a-ouaga",
+    "https://www.ontb.bf/evenements/snc",
+    "https://www.ontb.bf/evenements/sitho",
+    "https://www.ontb.bf/evenements/nak",
+    "https://www.ontb.bf/evenements/fitd",
+    "https://www.ontb.bf/evenements/rendez-vous-chez-nous",
+    "https://www.ontb.bf/evenements/boloarts",
+    "https://www.ontb.bf/evenements/filo",
+
+    # Discover Burkina Faso
+    "https://discover-burkinafaso.com/le-fespaco/",
+    "https://discover-burkinafaso.com/les-parcs-nationaux/",
+    "https://discover-burkinafaso.com/le-siao-au-burkina-faso/",
+    "https://discover-burkinafaso.com/ouagadougou-et-ses-environs/",
+    "https://discover-burkinafaso.com/attractions-de-bobo-dioulasso/",
+    "https://discover-burkinafaso.com/banfora-et-ses-environs/",
+    "https://discover-burkinafaso.com/manga-et-ses-environs/",
+    "https://discover-burkinafaso.com/fada-ngourma-et-ses-environs/",
+    "https://discover-burkinafaso.com/dedougou-et-ses-environs/",
+    "https://discover-burkinafaso.com/ziniare-et-ses-environs/",
+    "https://discover-burkinafaso.com/koudougou-et-ses-environs/",
+    "https://discover-burkinafaso.com/gaoua-et-ses-environs/",
+    "https://discover-burkinafaso.com/dori-et-ses-environs/",
+    "https://discover-burkinafaso.com/histoire-economie-politique/",
+    "https://discover-burkinafaso.com/culture-langues-religions/",
+    "https://discover-burkinafaso.com/climat-geographie/",
+    "https://discover-burkinafaso.com/nourriture-boissons/",
+    "https://discover-burkinafaso.com/transport/",
+    "https://discover-burkinafaso.com/visa-sante-securite/",
+    "https://discover-burkinafaso.com/informations-pratiques/",
+    "https://discover-burkinafaso.com/choses-a-faire/",
+
+    # Burkinatourism 
+    "https://www.burkinatourism.com/Les-Pics-de-Sindou-Un-Patrimoine-Impressionnant-au-Burkina-Faso.html",
+    "https://www.burkinatourism.com/Tourisme-La-cour-royale-de-Tiebele-une-autre-merveille-touristique-a-decouvrir.html",
+    "https://www.burkinatourism.com/LE-SITE-DE-TIWEGA.html",
+    "https://www.burkinatourism.com/LE-SITE-DE-YAMANE.html",
+    "https://www.burkinatourism.com/Le-monument-de-la-princesse-Yennenga.html",
+    "https://www.burkinatourism.com/La-premiere-mosquee-de-Ouaga-se-trouve-dans-l-enceinte-de-la-gare-ferroviaire-de-Ouagadougou.html",
+    "https://www.burkinatourism.com/Le-Musee-National-du-Burkina-Faso-Ouagadougou.html",
+    "https://www.burkinatourism.com/le-musee-de-la-musique.html",
+    "https://www.burkinatourism.com/Le-Village-artisanal-de-Ouagadougou.html",
+    "https://www.burkinatourism.com/SIAO-Salon-International-de-l-Artisanat-de-Ouagadougou.html",
+    "https://www.burkinatourism.com/LE-SITE-DE-DOUROULA-LE-DOYEN-DES-SITES.html",
+    "https://www.burkinatourism.com/LE-SITE-DE-BEKUY.html",
+    "https://www.burkinatourism.com/A-la-decouverte-du-musee-des-masques-de-KOUKA.html",
+    "https://www.burkinatourism.com/LE-VILLAGE-TROGLODYTE-DE-NIANSOGONI.html",
+    "https://www.burkinatourism.com/La-grotte-militaire-de-Diebougou-ou-La-guerre-Dingue.html",
+    "https://www.burkinatourism.com/Musee-de-Bobo-Dioulasso.html",
+    "https://www.burkinatourism.com/Gaoua-Le-musee-des-civilisations-du-peuple-lobi.html",
+    "https://www.burkinatourism.com/Le-batiment-abritant-le-marche-centre-de-Bobo-Dioulasso.html",
+    "https://www.burkinatourism.com/La-cathedrale-de-Bobo-Dioulasso.html",
+    "https://www.burkinatourism.com/Falaises-de-Gobnangou.html",
+    "https://www.burkinatourism.com/Parc-naturel-regional-du-W.html",
+    "https://www.burkinatourism.com/reserve-de-Pama.html",
+    "https://www.burkinatourism.com/Parc-national-d-Arli.html",
+    "https://www.burkinatourism.com/LE-SITE-DE-KINDIBO.html",
+    "https://www.burkinatourism.com/Musee-archeologique-de-Pobe-Mengao.html",
+    "https://www.burkinatourism.com/Les-mosquees-mythiques-de-Bani.html",
+    "https://www.burkinatourism.com/les-gravures-rupestres-de-Pobe-Mengao.html",
+    "https://www.burkinatourism.com/le-marches-de-Gorom-Gorom.html",
+    "https://www.burkinatourism.com/le-marches-de-Dori.html",
+    "https://www.burkinatourism.com/Les-Quatre-4-zones-touristiques-du-Burkina-Faso.html",
+    "https://www.burkinatourism.com/le-neem-une-plante-aux-vertus-legendaires.html",
+    "https://www.burkinatourism.com/Rencontre-avec-un-feticheur-guerisseur-a-Gaoua-en-pays-Lobi.html",
+    "https://www.burkinatourism.com/Le-Nabasga-de-Zorgho.html",
+    "https://www.burkinatourism.com/Les-10-des-choses-a-savoir-sur-le-peuple-Mossi.html",
+    "https://www.burkinatourism.com/Le-cola-est-symbole-d-hospitalite-et-de-cohesion-sociale.html",
+    "https://www.burkinatourism.com/CINE-BURKINA.html",
+    "https://www.burkinatourism.com/CINE-NEERWAYA.html",
+    "https://www.burkinatourism.com/CINE-ESPOIR-DE-TAMPOUY.html",
+    "https://www.burkinatourism.com/CINE-PISSY.html",
+    "https://www.burkinatourism.com/CINE-WEMTENGA.html",
+    "https://www.burkinatourism.com/CINE-SOMGANDE.html",
+    "https://www.burkinatourism.com/CINEMA-OUBRI.html",
+    "https://www.burkinatourism.com/Evenements-culturels-Jazz-a-Ouaga.html",
+    "https://www.burkinatourism.com/Festival-International-De-Theatre-Et-Des-Marionnettes-De-Ouagadougou-Au-Burkina-Faso.html",
+    "https://www.burkinatourism.com/NAK-Nuit-atypique-de-Koudougou-au-Burkina-Faso.html",
+    "https://www.burkinatourism.com/FITD-Le-Festival-International-de-Theatre-pour-le-Developpement.html",
+    "https://www.burkinatourism.com/LES-KUNDE.html",
+
+
+    "https://www.presidencedufaso.bf/opportunites-touristiques/",
+    "https://fasodiasporama.net/visiter-le-burkina-faso/",
+    "https://fr.wikivoyage.org/wiki/Burkina_Faso",
+    "https://www.tripadvisor.fr/Attractions-g293768-Activities-Burkina_Faso.html",
+    "https://fespaco.bf/le-fespaco/a-propos-du-festival/",
+    "https://fespaco.bf/le-fespaco/",
+    "https://fr.wikipedia.org/wiki/Festival_panafricain_du_cin%C3%A9ma_et_de_la_t%C3%A9l%C3%A9vision_de_Ouagadougou",
+    "https://www.ontb.bf/figures/thomas-sankara",
+    "https://www.memorialsankara.org/le-memorial/projet-architectural",
+    "https://lefaso.net/spip.php?article138439",
+    "https://www.ontb.bf/richesses/faso-danfani",
+    "https://www.ontb.bf/burkina-faso/geographie",
+    "https://www.ontb.bf/burkina-faso/ethnies",
+    "https://www.ontb.bf/burkina-faso"
+]))
+
+# -------------------------------
+# Fonctions utilitaires
+# -------------------------------
+
+# Vérifier si le scraping est autorisé via robots.txt
+def can_scrape(url):
+    try:
+        parsed = urllib.parse.urlparse(url)
+        base = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
+        rp = urllib.robotparser.RobotFileParser()
+        rp.set_url(base)
+        rp.read()
+        return rp.can_fetch("*", url)
+    except:
+        return False
+
+# Extraire le texte utile depuis une URL
+def get_text_from_url(url):
+    try:
+        if not can_scrape(url):
+            print(f"[!] Scraping non autorisé par robots.txt : {url}")
+            return ""
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(url, headers=headers, timeout=10, verify=False)
+        if response.status_code != 200:
+            print(f"[!] Impossible d'accéder à {url}")
+            return ""
+        soup = BeautifulSoup(response.text, "html.parser")
+        # Supprimer scripts, styles, nav, header, footer
+        for tag in soup(["script", "style", "header", "footer", "nav", "aside", "form"]):
+            tag.decompose()
+        text = soup.get_text(separator=" ", strip=True)
+        text = re.sub(r"\s+", " ", text)
+        # Supprimer phrases parasites
+        parasites = [
+            "Skip to content", "Accueil", "Partager sur Twitter", 
+            "Partager sur Facebook", "Lire la suite", "©", "Mentions légales"
+        ]
+        for phrase in parasites:
+            text = text.replace(phrase, "")
+        # Supprimer tags HTML restants
+        text = re.sub(r"<.*?>", "", text)
+        return text
+    except Exception as e:
+        print(f"[!] Erreur pour {url} : {e}")
+        return ""
+
+# Découper un texte en chunks de 150-300 mots
+def split_into_chunks(text, min_words=150, max_words=300):
+    words = text.split()
+    chunks = []
+    i = 0
+    while i < len(words):
+        chunk_size = random.randint(min_words, max_words)
+        chunk = words[i:i+chunk_size]
+        if chunk:
+            chunks.append(" ".join(chunk))
+        i += chunk_size
+    return chunks
+
+# -------------------------------
+# Collecte et création du corpus
+# -------------------------------
+corpus = []
+doc_id = 0
+
+for url in urls:
+    print(f"[+] Collecte depuis {url}")
+    time.sleep(1)  # délai pour respecter le serveur
+
+    text = get_text_from_url(url)
+    if len(text) > 50:  
+        chunks = split_into_chunks(text)
+        for chunk in chunks:
+            corpus.append({"doc_id": doc_id, "url": url, "text": chunk})
+            doc_id += 1
+
+# -------------------------------
+# Sauvegarde JSON
+# -------------------------------
+with open(JSON_FILE, "w", encoding="utf-8") as f:
+    json.dump(corpus, f, ensure_ascii=False, indent=2)
+print(f"[+] Corpus sauvegardé en JSON : {JSON_FILE}")
+
+# -------------------------------
+# Sauvegarde CSV
+# -------------------------------
+with open(CSV_FILE, "w", encoding="utf-8", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=["doc_id", "url", "text"])
+    writer.writeheader()
+    for doc in corpus:
+        writer.writerow(doc)
+print(f"[+] Corpus sauvegardé en CSV : {CSV_FILE}")
