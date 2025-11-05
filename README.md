@@ -1,74 +1,33 @@
-1. Sujet choisi et justification
+Rapport de Projet : Chatbot Thématique - Tourisme au Burkina FasoCe rapport présente la conception, l'architecture et les résultats de notre mini-challenge visant à créer un assistant conversationnel pour la promotion du tourisme au Burkina Faso.1. Sujet et Justification du Choix🎯 Sujet ChoisiNous avons développé un chatbot spécialisé dans le tourisme au Burkina Faso. Cet outil permet aux utilisateurs d'interroger directement le système sur des sujets variés tels que :Sites touristiques majeurs.Musées et lieux culturels.Festivals nationaux.Villages artisanaux.💡 Justification et Valeur AjoutéeLe Burkina Faso possède un patrimoine culturel et naturel exceptionnellement riche. Bien que des informations existent sur des plateformes comme l'ONTB ou BurkinaTourism, la recherche d'informations précises est souvent longue et dispersée.Notre chatbot propose une solution d'accès à l'information beaucoup plus rapide et centralisée. En agrégeant et en rendant accessible ce corpus via une interface conversationnelle, nous facilitons grandement la découverte du tourisme burkinabè, contribuant ainsi à l'épanouissement de ce secteur.2. Architecture Technique : RAG (Retrieval-Augmented Generation)Notre projet repose sur une architecture moderne de Génération Augmentée par Récupération (RAG), garantissant des réponses pertinentes et sourcées.Le processus est structuré en trois phases clés :🔍 Embeddings des Textes : Chaque segment de notre corpus documentaire est converti en un vecteur numérique (embedding) à l'aide du modèle performant multi-qa-mpnet-base-dot-v1.🗂️ Indexation Vectorielle (FAISS) : Les vecteurs sont stockés et indexés dans une base de données FAISS (Facebook AI Similarity Search). Cela permet une recherche ultra-rapide pour identifier les passages du corpus les plus pertinents par rapport à la question de l'utilisateur.🗣️ Génération de la Réponse (PHI-3 Mini) : Le modèle de langage (LLM) utilise les passages de texte récupérés pour générer une réponse cohérente, factuelle et contextuelle, s'efforçant toujours de citer les sources d'origine.Pour l'interaction utilisateur, nous avons mis en place :Une interface web conviviale via Gradio.Une API d'interaction via FastAPI, pour une intégration future dans d'autres applications.3. Technologies Open Source UtiliséesCe projet est construit entièrement avec des outils 100 % Open Source :ComposantTechnologieRôle PrincipalLienLangage PrincipalPython $\geq 3.10$Développement du projet.N/ARecherche VectorielleFAISS (Facebook AI Similarity Search)Indexation et recherche rapide des embeddings.🔗 GitHubGénération d'EmbeddingsSentenceTransformersModèle multi-qa-mpnet-base-dot-v1 pour les représentations vectorielles.🔗 Site WebModèle de GénérationMicrosoft PHI-3 MiniLLM léger pour la création de réponses.🔗 Hugging FaceInterface UtilisateurGradioCréation d'une démo web interactive.🔗 Site Web4. Instructions d'Installation et de Démarrage🛠️ PrérequisPython (version $\geq 3.10$)Git et pip installésMinimum 4 Go de RAM📄 Liste des Dépendances (requirements.txt)Voici la liste des paquets Python nécessaires à l'exécution du projet, installables via pip install -r requirements.txt :# === Core Python ===
+numpy
+pandas
+tqdm
 
-Pour ce mini-challenge, on a choisi de créer un chatbot sur le tourisme au Burkina Faso. L’idée, c’est de permettre à un utilisateur de poser des questions sur les sites touristiques, les musées, les festivals ou les villages artisanaux, et d’obtenir une réponse claire et sourcée.
-On a choisi ce thème parce qu’il est à la fois riche en contenu et proche de notre culture. Le Burkina a un patrimoine très varié, et il existe déjà beaucoup d’informations disponibles en ligne (sur des sites comme l’ONTB ou BurkinaTourism) neanmoins au lieu de passer des minutes voir des heures a chercher des inbformations sur le tourisme burkinabe sur plusieurs de ces sites, l'utilisation d'un chatbot qui rassemble justement les informations de tout ces sites et est capable de donner des reponses en beaucoup moins de temps sans se coltiner par exmeple le spubs sur ces sites est une bien meilleure solution pour faciliter l'acces au information sur le tourisme burkinabe et contribuer a l'epanouissement de ce secteur.
+# === NLP / Embeddings ===
+sentence-transformers    # Pour les embeddings (ex: multi-qa-mpnet-base-dot-v1)
+transformers              # Pour le modèle génératif (Phi-3-mini)
+torch                     # Backend pour les modèles HF
 
+# === Vector Store / Similarity Search ===
+faiss-cpu                # Recherche vectorielle rapide
+chromadb                 # Gestion du stockage des embeddings et documents
 
-2. Architecture technique
+# === Frontend (Interface) ===
+gradio                   # Interface web utilisateur du chatbot
 
-Notre projet suit une architecture RAG (Retrieval-Augmented Generation).
-En gros, le système est divisé en trois grandes étapes :
+# === Evaluation / Metrics ===
+scikit-learn             # Calcul précision / métriques
+nltk                     # Nettoyage texte / tokenisation
 
-Embeddings des textes → chaque passage de notre corpus est transformé en vecteur numérique avec le modèle multi-qa-mpnet-base-dot-v1.
-
-Indexation avec FAISS → on stocke tous les vecteurs pour pouvoir retrouver rapidement les passages les plus proches d’une question.
-
-Génération avec PHI-3 Mini → le modèle de langage génère une réponse à partir des passages trouvés, tout en essayant de citer les sources.
-
-Pour rendre tout cela accessible, on a aussi ajouté une interface avec Gradio, afin que l’utilisateur puisse poser ses questions directement depuis une page web.
-Et on a intégré FastAPI pour montrer qu’on pouvait aussi interagir avec le chatbot via une API (par exemple pour l’utiliser dans d’autres applications plus tard).
-
-3. Technologies open source utilisées
-
-Voici la liste des outils principaux qu’on a utilisés, tous 100 % open source :
-
-Python 3.10+ → langage principal du projet
-
-FAISS (Facebook AI Similarity Search) → pour la recherche vectorielle rapide
-🔗 https://github.com/facebookresearch/faiss
-
-SentenceTransformers → pour les embeddings avec le modèle multi-qa-mpnet-base-dot-v1
-🔗 https://www.sbert.net
-
-Microsoft PHI-3 Mini → modèle de génération léger et open source
-🔗 https://huggingface.co/microsoft/phi-3-mini-4k-instruct
-
-Gradio → pour l’interface utilisateur
-🔗 https://gradio.app
-
-4. Instructions d’installation
-Prérequis :
-
-Python installé (version ≥ 3.10)
-
-Git et pip installés
-
-Environ 4 Go de RAM minimum
-
-Étapes :
-
-Cloner le dépôt :
-
-git clone https://github.com/nom-du-projet/chatbot-touristique.git
+# === Data Processing / Scraping ===
+beautifulsoup4           # Parsing HTML
+requests                 # Téléchargement des pages web
+lxml                     # Parser XML/HTML rapide
+🚀 Étapes de LancementCloner le dépôt :git clone [https://github.com/nom-du-projet/chatbot-touristique.git](https://github.com/nom-du-projet/chatbot-touristique.git)
 cd chatbot-touristique
 
+Installer les dépendances :pip install -r requirements.txt
 
-Installer les dépendances :
+Lancer l'application :python interface.py
 
-pip install -r requirements.txt
-
-
-Lancer l’application :
-
-python interface.py
-
-
-Ouvrir le lien local généré (exemple : http://127.0.0.1:7860/) pour accéder à l’interface Gradio.
-
-5. Résultats et évaluation
-
-On a testé le chatbot avec 20 questions sur le tourisme burkinabè (parcs, musées, festivals, etc.).
-Dans la majorité des cas, le chatbot a donné des réponses base sur notre corpus et a su former des phares pour expliquer et repondre , surtout pour les questions simples.
- mais on a remarqué certaines limites : parfois le modèle hallucine (invente des réponses) ou cite mal les sources.
-C’est normal, car le modèle PHI-3 Mini reste un petit modèle, donc il a ses faiblesses.
-Malgré ça, notre système fonctionne bien pour une démo locale, et il prouve qu’on peut faire un assistant touristique 100 % open source et basé sur des données burkinabè.
+Accéder à l'interface :Ouvrez le lien local généré (ex. : http://127.0.0.1:7860/) dans votre navigateur pour interagir avec le chatbot via Gradio.5. Résultats et Évaluation✅ PerformancesLe chatbot a été testé avec une batterie de 20 questions portant sur le tourisme burkinabè (parcs, musées, festivals, etc.).Réponses factuelles : Pour la majorité des requêtes simples, le système a démontré sa capacité à formuler des réponses claires et basées sur le corpus, prouvant la fonctionnalité de l'architecture RAG.Preuve de concept : Le projet valide la faisabilité de créer un assistant touristique local, performant et 100 % open source, en s'appuyant sur des données burkinabè.⚠️ LimitesConformément aux attentes pour un modèle de sa taille, le PHI-3 Mini a montré certaines faiblesses inhérentes aux petits LLM :Hallucinations : Une tendance occasionnelle à inventer des informations.Imprécisions de Sourçage : Des citations de sources parfois incorrectes ou incomplètes.Ces limites n'empêchent pas le système de fonctionner efficacement comme une preuve de concept et une démo locale solide.
